@@ -6,10 +6,18 @@ Date: October 16th 2024
 
 This application uses Flask to show a webpage that uses Bootstrap for design and a json for the data.
 """
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from requests import get
 from post import Post
+from smtplib import SMTP
+
+EMAIL = "email@gmail.com" # Your email
+PASSWORD = "password" # Your password
+HOST = "smtp.gmail.com" # I use gmail's smtp, may change depending on your email provider
+PORT = 587
 
 # Gets the data of the post
 posts = get(url="https://api.npoint.io/dfae0d41493794c77072").json()
@@ -67,13 +75,38 @@ def about():
     """
     return render_template("about.html")
 
-@app.route('/contact')
+@app.route('/contact', methods=["GET", "POST"])
 def contact():
     """
     Renders contact.html file
     :return:
     """
-    return render_template("contact.html")
+
+    message_sent = False
+
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        message = request.form["message"]
+
+        msg = MIMEMultipart()
+        body = f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
+        msg.attach(MIMEText(body, 'plain'))
+
+        with SMTP(host=HOST, port=PORT) as smtp:
+
+            smtp.starttls()
+
+            smtp.login(user=EMAIL, password=PASSWORD)
+
+            smtp.sendmail(from_addr=EMAIL, to_addrs=EMAIL, msg=msg.as_string())
+
+        message_sent = True
+
+        return render_template("contact.html", message_sent=message_sent)
+
+    return render_template("contact.html", message_sent=message_sent)
 
 # Start the flask application
 if __name__ == "__main__":
