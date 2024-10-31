@@ -27,6 +27,7 @@
                     Posted by
                     <a href="#!">{{ post.author }}</a>
                     on {{ post.date }}
+                    <a href="{{ url_for('delete_post', index_number=post.id) }}">✘</a>
                 </p>
             </div>
             <!-- Divider-->

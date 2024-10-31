@@ -101,7 +101,7 @@ def add_new_post():
     # If the user clicks on submit
     if request.method == "POST":
         # Gets the server date in a formatted code
-        date = datetime.now().strftime("%m %d, %Y")
+        date = datetime.now().strftime("%B %d, %Y")
         # Creates a new post using the form's data
         new_post = BlogPost(
             title=request.form.get("title"),
@@ -155,6 +155,23 @@ def edit_post(index_number):
         return redirect(url_for("index"))
 
     return render_template("make-post.html", is_new_post=is_new_post, form=form)
+
+
+@app.route("/delete/<int:index_number>")
+def delete_post(index_number):
+    """
+    Gets the index number and deletes the blog from the database
+    :param index_number:
+    :return:
+    """
+    # Search the blogpost
+    blogpost = db.get_or_404(BlogPost, index_number)
+    # Deletes the blogpost
+    db.session.delete(blogpost)
+    # Saves the blogpost
+    db.session.commit()
+
+    return redirect(url_for("index"))
 
 
 @app.route('/about')
