@@ -91,7 +91,12 @@ def post(index_number):
 
 @app.route("/new-post", methods=["GET", "POST"])
 def add_new_post():
+    """
+    Renders a form where the user can add a new blog
+    :return:
+    """
     form = PostForm()
+    is_new_post = True
 
     # If the user clicks on submit
     if request.method == "POST":
@@ -114,7 +119,42 @@ def add_new_post():
 
         return redirect(url_for("index"))
 
-    return render_template("make-post.html", form=form)
+    return render_template("make-post.html", is_new_post=is_new_post, form=form)
+
+
+@app.route("/edit-post/<int:index_number>", methods=["GET", "POST "])
+def edit_post(index_number):
+    """
+    Renders a form where the user can edit an existing form
+    :return:
+    """
+    blogpost = db.get_or_404(BlogPost, index_number)
+
+    form = PostForm(
+        title=blogpost.title,
+        subtitle=blogpost.subtitle,
+        img_url=blogpost.img_url,
+        author=blogpost.author,
+        body=blogpost.body
+    )
+
+    is_new_post = False
+
+    # If the user clicks on submit
+    if request.method == "POST":
+        # Creates a new post using the form's data
+        blogpost.title = request.form.get("title")
+        blogpost.subtitle = request.form.get("subtitle")
+        blogpost.body = request.form.get("body")
+        blogpost.author = request.form.get("author")
+        blogpost.img_url = request.form.get("img_url")
+
+        # Saves changes
+        db.session.commit()
+
+        return redirect(url_for("index"))
+
+    return render_template("make-post.html", is_new_post=is_new_post, form=form)
 
 
 @app.route('/about')
