@@ -1,6 +1,6 @@
 {% include "header.html" %}
 <!-- Page Header-->
-<header class="masthead" style="background-image: url('{{ post.image_url }}')">
+<header class="masthead" style="background-image: url('{{ post.img_url }}')">
     <div class="container position-relative px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
@@ -8,10 +8,8 @@
                     <h1>{{ post.title }}</h1>
                     <h2 class="subheading">{{ post.subtitle }}</h2>
                     <span class="meta">
-                                Posted by
-                                <a href="#!">Start Bootstrap</a>
-                                on August 24, 2023
-                            </span>
+                        Posted by <a href="#!">{{ post.author }}</a> on {{ post.date }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -22,7 +20,12 @@
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
-                <p>{{ post.body }}</p>
+                <!-- Render post.body with HTML tags interpreted -->
+                {{ post.body | safe }}
+                <div class="d-flex justify-content-end mb-4">
+                    <!-- TODO: Editing posts-->
+                    <a class="btn btn-primary float-right" href="TODO: Add code to edit_post here">Edit Post</a>
+                </div>
             </div>
         </div>
     </div>
