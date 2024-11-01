@@ -14,7 +14,7 @@ from smtplib import SMTP
 from flask import Flask, render_template, request, url_for, flash
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from flask_login import LoginManager, UserMixin, login_user
+from flask_login import LoginManager, UserMixin, login_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -84,7 +84,7 @@ def index():
     :return:
     """
     blogposts = db.session.execute(db.select(BlogPost)).scalars().all()
-    return render_template("index.html", posts=blogposts)
+    return render_template("index.html", posts=blogposts, logged_in=current_user)
 
 
 @app.route('/post/<int:index_number>')
@@ -96,7 +96,7 @@ def post(index_number):
     """
 
     blogpost = db.get_or_404(BlogPost, index_number)
-    return render_template("post.html", post=blogpost)
+    return render_template("post.html", post=blogpost, logged_in=current_user)
 
 
 @app.route("/new-post", methods=["GET", "POST"])
@@ -129,10 +129,10 @@ def add_new_post():
 
         return redirect(url_for("index"))
 
-    return render_template("make-post.html", is_new_post=is_new_post, form=form)
+    return render_template("make-post.html", is_new_post=is_new_post, form=form, logged_in=current_user)
 
 
-@app.route("/edit-post/<int:index_number>", methods=["GET", "POST "])
+@app.route("/edit-post/<int:index_number>", methods=["GET", "POST "], logged_in=current_user)
 def edit_post(index_number):
     """
     Renders a form where the user can edit an existing form
@@ -164,7 +164,7 @@ def edit_post(index_number):
 
         return redirect(url_for("index"))
 
-    return render_template("make-post.html", is_new_post=is_new_post, form=form)
+    return render_template("make-post.html", is_new_post=is_new_post, form=form, logged_in=current_user)
 
 
 @app.route("/delete/<int:index_number>")
@@ -227,7 +227,7 @@ def register():
             flash("Log in with that email instead!")
             return redirect(url_for("login"))
 
-    return render_template("register.html", form=form)
+    return render_template("register.html", form=form, logged_in=current_user)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -268,7 +268,7 @@ def login():
             flash("There is no user registered with that email")
             return redirect(url_for("login"))
 
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, logged_in=current_user)
 
 
 @app.route('/about')
@@ -277,7 +277,7 @@ def about():
     Renders about.html file
     :return:
     """
-    return render_template("about.html")
+    return render_template("about.html", logged_in=current_user)
 
 
 @app.route('/contact', methods=["GET", "POST"])
@@ -308,9 +308,9 @@ def contact():
 
         message_sent = True
 
-        return render_template("contact.html", message_sent=message_sent)
+        return render_template("contact.html", message_sent=message_sent, logged_in=current_user)
 
-    return render_template("contact.html", message_sent=message_sent)
+    return render_template("contact.html", message_sent=message_sent, logged_in=current_user)
 
 
 # Start the flask application
