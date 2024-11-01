@@ -84,6 +84,7 @@ def index():
     :return:
     """
     blogposts = db.session.execute(db.select(BlogPost)).scalars().all()
+
     return render_template("index.html", posts=blogposts, current_user=current_user)
 
 
@@ -94,8 +95,8 @@ def post(index_number):
     :param index_number:
     :return:
     """
-
     blogpost = db.get_or_404(BlogPost, index_number)
+
     return render_template("post.html", post=blogpost, current_user=current_user)
 
 
@@ -270,6 +271,7 @@ def login():
 
     return render_template("login.html", form=form, current_user=current_user)
 
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -279,6 +281,7 @@ def logout():
     """
     logout_user()
     return redirect(url_for("index"))
+
 
 @app.route('/about')
 def about():

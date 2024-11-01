@@ -23,8 +23,10 @@
                 <!-- Render post.body with HTML tags interpreted -->
                 {{ post.body | safe }}
                 <div class="d-flex justify-content-end mb-4">
-                    <!-- TODO: Editing posts-->
-                    <a class="btn btn-primary float-right" href="{{ url_for('edit_post', index_number=post.id) }}">Edit Post</a>
+                    {% if current_user.id == 1 %}
+                    <a class="btn btn-primary float-right" href="{{ url_for('edit_post', index_number=post.id) }}">Edit
+                        Post</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
