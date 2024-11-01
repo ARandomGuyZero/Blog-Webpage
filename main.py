@@ -79,6 +79,9 @@ def register():
             # Save changes
             db.session.commit()
 
+            # Automatically logs the new user in
+            login_user(user)
+
             return redirect(url_for("secrets", name=name))
 
     return render_template("register.html", logged_in=current_user.is_authenticated)
