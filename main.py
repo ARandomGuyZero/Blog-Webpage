@@ -186,6 +186,11 @@ def delete_post(index_number):
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Renders the register.html page
+    Once the user completes the form, we will register
+    :return:
+    """
     # Creates a new form using the RegisterForm class
     form = RegisterForm()
     if request.method == "POST":
@@ -195,8 +200,9 @@ def register():
         name = request.form.get("name")
 
         # Get the data from the dabase
-        user = db.session.execute(db.select(User).where(email == email))
+        user = db.session.execute(db.select(User).where(User.email == email))
 
+        # Checks if there is a user in the database, if we couldn't find them, then we create one
         if not user:
 
             # Generate a password using a hashed method
@@ -216,6 +222,7 @@ def register():
 
             return redirect(url_for("index"))
 
+        # If we founded, we redirect them to the login page
         else:
             flash("Log in with that email instead!")
             return redirect(url_for("login"))
@@ -225,6 +232,11 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Renders the login.html page
+    Once the user completes the form, we will register
+    :return:
+    """
     # Creates a new form using the RegisterForm class
     form = LogInForm()
 
@@ -232,18 +244,29 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        found_user = db.session.execute(db.select(User).where(email == email)).scalar()
+        found_user = db.session.execute(db.select(User).where(User.email == email)).scalar()
 
-        print(found_user.password)
-
+        # If there is a user in the database, then we continue
         if found_user:
 
             hashed_password = found_user.password
 
+            # Checks if the password is correct with the hashed one
             if check_password_hash(hashed_password, password):
                 login_user(found_user)
 
                 return redirect(url_for("index"))
+
+            # If it's not correct, we let the user know
+            else:
+
+                flash("The password is not correct!")
+                return redirect(url_for("login"))
+
+        # If we couldn't find one, let's make the user know
+        else:
+            flash("There is no user registered with that email")
+            return redirect(url_for("login"))
 
     return render_template("login.html", form=form)
 
