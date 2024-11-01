@@ -9,9 +9,11 @@ This application uses Flask to show a webpage that uses Bootstrap for design and
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from functools import wraps
 from smtplib import SMTP
 
 from flask import Flask, render_template, request, url_for, flash
+from flask import abort
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
@@ -77,6 +79,16 @@ with app.app_context():
     db.create_all()
 
 
+def admin_only(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if not current_user.id == 1:
+            return abort(403)
+        return func(*args, **kwargs)
+
+    return decorated_function
+
+
 @app.route('/')
 def index():
     """
@@ -101,6 +113,8 @@ def post(index_number):
 
 
 @app.route("/new-post", methods=["GET", "POST"])
+@admin_only
+@login_required
 def add_new_post():
     """
     Renders a form where the user can add a new blog
@@ -134,6 +148,8 @@ def add_new_post():
 
 
 @app.route("/edit-post/<int:index_number>", methods=["GET", "POST "])
+@admin_only
+@login_required
 def edit_post(index_number):
     """
     Renders a form where the user can edit an existing form
@@ -169,6 +185,8 @@ def edit_post(index_number):
 
 
 @app.route("/delete/<int:index_number>")
+@admin_only
+@login_required
 def delete_post(index_number):
     """
     Gets the index number and deletes the blog from the database
