@@ -31,10 +31,24 @@
                 </div>
                 {% endif %}
             </div>
-            <div class="col-lg-8 col-md-10 mx-auto">
-                {{ ckeditor.load() }}
-                {{ ckeditor.config(name='body') }}
-                {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+            <!-- Comments Area -->
+            {{ ckeditor.load() }}
+            {{ ckeditor.config(name='body') }}
+            {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+            <div class="comment">
+                {% for comment in comments %}
+                <ul class="commentList">
+                    <li>
+                        <div class="commenterImage">
+                            <img src="{{ gravatar_url(comment.author.email) }}" alt="User Gravatar"/>
+                        </div>
+                        <div class="commentText">
+                            <p>{{ comment.author.name }}</p>
+                            <span class="date sub-text">{{ comment.text | safe }}</span>
+                        </div>
+                    </li>
+                </ul>
+                {% endfor %}
             </div>
         </div>
     </div>

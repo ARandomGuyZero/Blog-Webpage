@@ -6,17 +6,20 @@ Date: October 16th 2024
 
 This application uses Flask to show a webpage that uses Bootstrap for design and a json for the data.
 """
+import hashlib
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from functools import wraps
 from smtplib import SMTP
 
-from flask import Flask, render_template, request, url_for, flash
+from flask import Flask
 from flask import abort
+from flask import render_template, request, url_for, flash
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin
+from flask_login import login_user, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String, Text, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -32,6 +35,7 @@ PORT = 587
 
 # Starts the app
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
@@ -41,12 +45,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(User, user_id)
-
-
-# CREATE DATABASE
 class Base(DeclarativeBase):
     pass
 
@@ -69,6 +67,9 @@ class User(UserMixin, db.Model):
     # Relationship to BlogPost
     posts = relationship("BlogPost", back_populates="author")
 
+    # Relationship to Comment
+    comments = relationship("Comment", back_populates="author")
+
 
 class BlogPost(db.Model):
     __tablename__ = "blogpost_table"
@@ -81,13 +82,50 @@ class BlogPost(db.Model):
     body: Mapped[str] = mapped_column(Text, nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
+    # Relationship to Comment
+    comments = relationship("Comment", back_populates="blogpost")
+
     # Foreign key to User and relationship
     author_id: Mapped[int] = mapped_column(ForeignKey("user_table.id"), nullable=False)
     author = relationship("User", back_populates="posts")
 
 
+class Comment(db.Model):
+    __tablename__ = "comment_table"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    # Data
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Foreign key to User and relationship
+    author_id: Mapped[int] = mapped_column(ForeignKey("user_table.id"), nullable=False)
+    author = relationship("User", back_populates="comments")
+
+    # Foreign key to BlogPost and relationship
+    blogpost_id: Mapped[int] = mapped_column(ForeignKey("blogpost_table.id"), nullable=False)
+    blogpost = relationship("BlogPost", back_populates="comments")
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
+
+
 with app.app_context():
     db.create_all()
+
+
+def gravatar_url(email, size=100, default="retro", rating="g"):
+    """
+    Uses gravatar to get the images from the site
+    :param email: String with email
+    :param size: Integer with size of image
+    :param default: String of what image to choose if now found
+    :param rating: String with the level of control of parenting of the image (General)
+    :return:
+    """
+    hashed_email = hashlib.md5(email.strip().lower().encode("utf-8")).hexdigest()
+    return f"https://www.gravatar.com/avatar/{hashed_email}?s={size}&d={default}&r={rating}"
 
 
 def admin_only(func):
@@ -111,7 +149,7 @@ def index():
     return render_template("index.html", posts=blogposts, current_user=current_user)
 
 
-@app.route('/post/<int:index_number>')
+@app.route('/post/<int:index_number>', methods=["GET", "POST"])
 def post(index_number):
     """
     Renders post.html file using an index number to post a certain post.
@@ -119,10 +157,28 @@ def post(index_number):
     :return:
     """
     form = CommentForm()
-
     blogpost = db.get_or_404(BlogPost, index_number)
+    blogpost_id = blogpost.id
 
-    return render_template("post.html", post=blogpost, form=form, current_user=current_user)
+    comments = db.session.execute(db.select(Comment).where(Comment.blogpost_id == blogpost_id)).scalars().all()
+
+    if request.method == "POST":
+        text = request.form.get("text")
+        new_comment = Comment(
+            text=text,
+            author_id=current_user.id,
+            blogpost_id=blogpost_id
+        )
+
+        # Adds the new comment
+        db.session.add(new_comment)
+        # Saves the data
+        db.session.commit()
+
+        return redirect(url_for("post", index_number=blogpost_id))
+
+    return render_template("post.html", post=blogpost, comments=comments, form=form, current_user=current_user,
+                           gravatar_url=gravatar_url)
 
 
 @app.route("/new-post", methods=["GET", "POST"])

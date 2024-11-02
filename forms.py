@@ -26,5 +26,5 @@ class PostForm(FlaskForm):
 
 
 class CommentForm(FlaskForm):
-    comment = CKEditorField("Leave a comment", validators=[DataRequired()])
+    text = CKEditorField("Leave a comment", validators=[DataRequired()])
     submit = SubmitField()
