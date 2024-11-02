@@ -144,7 +144,7 @@ def add_new_post():
             subtitle=request.form.get("subtitle"),
             body=request.form.get("body"),
             date=date,
-            author=request.form.get("author"),
+            author_id=current_user.id,
             img_url=request.form.get("img_url"),
         )
         # Adds the new row to the database
@@ -158,7 +158,7 @@ def add_new_post():
     return render_template("make-post.html", is_new_post=is_new_post, form=form, current_user=current_user)
 
 
-@app.route("/edit-post/<int:index_number>", methods=["GET", "POST "])
+@app.route("/edit-post/<int:index_number>", methods=["GET", "POST"])
 @admin_only
 @login_required
 def edit_post(index_number):
@@ -172,7 +172,6 @@ def edit_post(index_number):
         title=blogpost.title,
         subtitle=blogpost.subtitle,
         img_url=blogpost.img_url,
-        author=blogpost.author,
         body=blogpost.body
     )
 
@@ -184,7 +183,6 @@ def edit_post(index_number):
         blogpost.title = request.form.get("title")
         blogpost.subtitle = request.form.get("subtitle")
         blogpost.body = request.form.get("body")
-        blogpost.author = request.form.get("author")
         blogpost.img_url = request.form.get("img_url")
 
         # Saves changes
@@ -229,8 +227,8 @@ def register():
         password = request.form.get("password")
         name = request.form.get("name")
 
-        # Get the data from the dabase
-        user = db.session.execute(db.select(User).where(User.email == email))
+        # Get the data from the database
+        user = db.session.execute(db.select(User).where(User.email == email)).scalar()
 
         # Checks if there is a user in the database, if we couldn't find them, then we create one
         if not user:
@@ -249,6 +247,8 @@ def register():
 
             # Save the data to the database
             db.session.commit()
+
+            login_user(new_user)
 
             return redirect(url_for("index"))
 

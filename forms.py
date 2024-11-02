@@ -20,7 +20,6 @@ class LogInForm(FlaskForm):
 class PostForm(FlaskForm):
     title = StringField("Blog Post Title:", validators=[DataRequired()])
     subtitle = StringField("Blog Post Subtitle:", validators=[DataRequired()])
-    author = StringField("Your Name:", validators=[DataRequired()])
     img_url = StringField("The Image URL for your Blog:", validators=[DataRequired(), URL()])
     body = CKEditorField("Body:", validators=[DataRequired()])
     submit = SubmitField()
