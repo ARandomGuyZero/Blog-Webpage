@@ -4,15 +4,6 @@ from wtforms.fields.simple import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, URL, Email
 
 
-class PostForm(FlaskForm):
-    title = StringField("Blog Post Title:", validators=[DataRequired()])
-    subtitle = StringField("Blog Post Subtitle:", validators=[DataRequired()])
-    author = StringField("Your Name:", validators=[DataRequired()])
-    img_url = StringField("The Image URL for your Blog:", validators=[DataRequired(), URL()])
-    body = CKEditorField("Body:", validators=[DataRequired()])
-    submit = SubmitField()
-
-
 class RegisterForm(FlaskForm):
     email = StringField("Email:", validators=[DataRequired(), Email()])
     password = PasswordField("Password:", validators=[DataRequired()])
@@ -23,4 +14,13 @@ class RegisterForm(FlaskForm):
 class LogInForm(FlaskForm):
     email = StringField("Email:", validators=[DataRequired(), Email()])
     password = PasswordField("Password:", validators=[DataRequired()])
+    submit = SubmitField()
+
+
+class PostForm(FlaskForm):
+    title = StringField("Blog Post Title:", validators=[DataRequired()])
+    subtitle = StringField("Blog Post Subtitle:", validators=[DataRequired()])
+    author = StringField("Your Name:", validators=[DataRequired()])
+    img_url = StringField("The Image URL for your Blog:", validators=[DataRequired(), URL()])
+    body = CKEditorField("Body:", validators=[DataRequired()])
     submit = SubmitField()
