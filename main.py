@@ -23,7 +23,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import redirect
 
-from forms import PostForm, RegisterForm, LogInForm
+from forms import PostForm, RegisterForm, LogInForm, CommentForm
 
 EMAIL = "email@gmail.com"  # Your email
 PASSWORD = "password"  # Your password
@@ -118,9 +118,11 @@ def post(index_number):
     :param index_number:
     :return:
     """
+    form = CommentForm()
+
     blogpost = db.get_or_404(BlogPost, index_number)
 
-    return render_template("post.html", post=blogpost, current_user=current_user)
+    return render_template("post.html", post=blogpost, form=form, current_user=current_user)
 
 
 @app.route("/new-post", methods=["GET", "POST"])
